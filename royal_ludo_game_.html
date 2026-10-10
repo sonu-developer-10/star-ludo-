@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Royal Ludo King</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Yatra+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #2c1605 0%, #0d0501 100%);
+            color: #f3e5ab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        .font-desi {
+            font-family: 'Yatra One', cursive;
+        }
+
+        .font-heading {
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        /* Gold metallic text effect */
+        .gold-text {
+            background: linear-gradient(135deg, #ffe066 0%, #f5af19 50%, #e65c00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Ornate Wooden/Brass Container Frame */
+        .board-frame {
+            background: linear-gradient(145deg, #5c2c10, #2e1203);
+            border: 12px solid #d4af37;
+            border-image: linear-gradient(to bottom right, #ffe57f, #aa7c11, #fff3b0, #7a5006) 1;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        /* Dice 3D Cube CSS for Corner Cards */
+        .scene {
+            width: 46px;
+            height: 46px;
+            perspective: 250px;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            border: 1.5px solid #b8860b;
+            border-radius: 8px;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.25);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 4px;
+            box-sizing: border-box;
+        }
+
+        .dot {
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: #222;
+            border-radius: 50%;
+            margin: auto;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* Dot placements for each face */
+        .face-1 .dot { grid-area: 2 / 2; background: #d32f2f; width: 10px; height: 10px; }
+
+        .face-2 .dot:nth-child(1) { grid-area: 1 / 1; }
+        .face-2 .dot:nth-child(2) { grid-area: 3 / 3; }
+
+        .face-3 .dot:nth-child(1) { grid-area: 1 / 1; }
+        .face-3 .dot:nth-child(2) { grid-area: 2 / 2; }
+        .face-3 .dot:nth-child(3) { grid-area: 3 / 3; }
+
+        .face-4 .dot:nth-child(1) { grid-area: 1 / 1; }
+        .face-4 .dot:nth-child(2) { grid-area: 1 / 3; }
+        .face-4 .dot:nth-child(3) { grid-area: 3 / 1; }
+        .face-4 .dot:nth-child(4) { grid-area: 3 / 3; }
+
+        .face-5 .dot:nth-child(1) { grid-area: 1 / 1; }
+        .face-5 .dot:nth-child(2) { grid-area: 1 / 3; }
+        .face-5 .dot:nth-child(3) { grid-area: 2 / 2; }
+        .face-5 .dot:nth-child(4) { grid-area: 3 / 1; }
+        .face-5 .dot:nth-child(5) { grid-area: 3 / 3; }
+
+        .face-6 .dot:nth-child(1) { grid-area: 1 / 1; }
+        .face-6 .dot:nth-child(2) { grid-area: 1 / 3; }
+        .face-6 .dot:nth-child(3) { grid-area: 2 / 1; }
+        .face-6 .dot:nth-child(4) { grid-area: 2 / 3; }
+        .face-6 .dot:nth-child(5) { grid-area: 3 / 1; }
+        .face-6 .dot:nth-child(6) { grid-area: 3 / 3; }
+
+        /* Face translations (23px translateZ for 46px cube) */
+        .face-1 { transform: rotateY(0deg) translateZ(23px); }
+        .face-2 { transform: rotateY(180deg) translateZ(23px); }
+        .face-3 { transform: rotateY(-90deg) translateZ(23px); }
+        .face-4 { transform: rotateY(90deg) translateZ(23px); }
+        .face-5 { transform: rotateX(90deg) translateZ(23px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(23px); }
+
+        /* Custom Modal Backdrop */
+        .modal-bg {
+            background-color: rgba(10, 5, 2, 0.85);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Banner Notification Animation */
+        @keyframes toastSlide {
+            0% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+            20% { transform: translateY(0) scale(1.1); opacity: 1; }
+            30% { transform: translateY(0) scale(1); opacity: 1; }
+            80% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-30px) scale(0.9); opacity: 0; }
+        }
+
+        .toast-banner {
+            animation: toastSlide 2.2s ease-in-out forwards;
+        }
+
+        #gameCanvas {
+            border-radius: 4px;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-4">
+
+    <!-- TOP BAR / HEADER -->
+    <header class="w-full max-w-2xl flex items-center justify-between py-2 px-4 bg-yellow-950/60 border border-yellow-600/40 rounded-xl mb-2 shadow-lg backdrop-blur-md">
+        <div class="flex items-center space-x-2">
+            <span class="text-3xl">👑</span>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-heading font-bold gold-text leading-none tracking-wider uppercase">Royal Ludo</h1>
+                <p class="text-[10px] md:text-xs text-yellow-200/70 font-semibold tracking-wider uppercase">Classic Royal Edition</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="soundToggleBtn" onclick="toggleSound()" class="p-2 bg-amber-900/80 hover:bg-amber-800 border border-yellow-500/50 rounded-lg text-lg transition transform active:scale-95" title="Mute/Unmute Audio">
+                🔊
+            </button>
+            <button id="speedToggleBtn" onclick="toggleSpeed()" class="px-2.5 py-1 bg-amber-900/80 hover:bg-amber-800 border border-yellow-500/50 rounded-lg text-xs font-bold transition transform active:scale-95 text-yellow-300" title="Animation Speed">
+                ⚡ 1x
+            </button>
+            <button onclick="openRestartModal()" class="px-3 py-1 bg-red-900/80 hover:bg-red-800 border border-red-500/50 rounded-lg text-xs md:text-sm font-bold text-red-200 transition transform active:scale-95">
+                Restart
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="w-full max-w-2xl flex flex-col items-center justify-center relative my-auto">
+        
+        <!-- TOP PLAYER CARDS (RED Left, GREEN Right) -->
+        <div class="w-full max-w-[500px] flex items-center justify-between gap-2 mb-2">
+            <!-- PLAYER 0 (RED - Top Left) -->
+            <div id="playerCard-0" class="player-card flex-1 flex items-center justify-between p-2 rounded-xl bg-yellow-950/80 border-2 border-red-600/50 shadow-lg transition-all duration-300 opacity-45">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-white shadow flex items-center justify-center font-bold text-sm bg-red-600 text-white">🔴</div>
+                    <div class="leading-tight">
+                        <div class="font-bold text-xs md:text-sm text-red-400 flex items-center gap-1">
+                            Red <span id="score-0" class="text-[10px] bg-black/60 px-1 py-0.5 rounded text-yellow-300 font-normal">0/4</span>
+                        </div>
+                        <div id="pStatus-0" class="text-[10px] text-yellow-200/70 font-medium">Wait</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5">
+                    <div class="scene" onclick="handleDiceClick(0)">
+                        <div class="cube" id="diceCube-0" style="transform: translateZ(-23px) rotateX(0deg) rotateY(0deg);">
+                            <div class="cube-face face-1"><span class="dot"></span></div>
+                            <div class="cube-face face-2"><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-4"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-5"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-6"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                        </div>
+                    </div>
+                    <button id="rollBtn-0" onclick="handleDiceClick(0)" class="px-2 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs rounded-lg shadow border border-yellow-200 active:scale-95 transition flex flex-col items-center">
+                        <span>🎲 ROLL</span>
+                        <span id="diceValBadge-0" class="text-[10px] bg-black text-yellow-300 px-1 rounded hidden">1</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PLAYER 1 (GREEN - Top Right) -->
+            <div id="playerCard-1" class="player-card flex-1 flex items-center justify-between p-2 rounded-xl bg-yellow-950/80 border-2 border-green-600/50 shadow-lg transition-all duration-300 opacity-45">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-white shadow flex items-center justify-center font-bold text-sm bg-green-600 text-white">🟢</div>
+                    <div class="leading-tight">
+                        <div class="font-bold text-xs md:text-sm text-green-400 flex items-center gap-1">
+                            Green <span id="score-1" class="text-[10px] bg-black/60 px-1 py-0.5 rounded text-yellow-300 font-normal">0/4</span>
+                        </div>
+                        <div id="pStatus-1" class="text-[10px] text-yellow-200/70 font-medium">Wait</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5">
+                    <div class="scene" onclick="handleDiceClick(1)">
+                        <div class="cube" id="diceCube-1" style="transform: translateZ(-23px) rotateX(0deg) rotateY(0deg);">
+                            <div class="cube-face face-1"><span class="dot"></span></div>
+                            <div class="cube-face face-2"><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-4"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-5"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-6"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                        </div>
+                    </div>
+                    <button id="rollBtn-1" onclick="handleDiceClick(1)" class="px-2 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs rounded-lg shadow border border-yellow-200 active:scale-95 transition flex flex-col items-center">
+                        <span>🎲 ROLL</span>
+                        <span id="diceValBadge-1" class="text-[10px] bg-black text-yellow-300 px-1 rounded hidden">1</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOARD DISPLAY CONTAINER -->
+        <div class="board-frame p-2 md:p-3 rounded-2xl w-full max-w-[500px] aspect-square flex items-center justify-center relative shadow-2xl">
+            <canvas id="gameCanvas" width="600" height="600" class="w-full h-full cursor-pointer"></canvas>
+            
+            <!-- POPUP BANNER ANNOUNCEMENTS -->
+            <div id="toastContainer" class="absolute inset-0 pointer-events-none flex items-center justify-center z-20"></div>
+        </div>
+
+        <!-- BOTTOM PLAYER CARDS (BLUE Left, YELLOW Right) -->
+        <div class="w-full max-w-[500px] flex items-center justify-between gap-2 mt-2">
+            <!-- PLAYER 3 (BLUE - Bottom Left) -->
+            <div id="playerCard-3" class="player-card flex-1 flex items-center justify-between p-2 rounded-xl bg-yellow-950/80 border-2 border-blue-600/50 shadow-lg transition-all duration-300 opacity-45">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-white shadow flex items-center justify-center font-bold text-sm bg-blue-600 text-white">🔵</div>
+                    <div class="leading-tight">
+                        <div class="font-bold text-xs md:text-sm text-blue-400 flex items-center gap-1">
+                            Blue <span id="score-3" class="text-[10px] bg-black/60 px-1 py-0.5 rounded text-yellow-300 font-normal">0/4</span>
+                        </div>
+                        <div id="pStatus-3" class="text-[10px] text-yellow-200/70 font-medium">Wait</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5">
+                    <div class="scene" onclick="handleDiceClick(3)">
+                        <div class="cube" id="diceCube-3" style="transform: translateZ(-23px) rotateX(0deg) rotateY(0deg);">
+                            <div class="cube-face face-1"><span class="dot"></span></div>
+                            <div class="cube-face face-2"><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-4"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-5"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-6"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                        </div>
+                    </div>
+                    <button id="rollBtn-3" onclick="handleDiceClick(3)" class="px-2 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs rounded-lg shadow border border-yellow-200 active:scale-95 transition flex flex-col items-center">
+                        <span>🎲 ROLL</span>
+                        <span id="diceValBadge-3" class="text-[10px] bg-black text-yellow-300 px-1 rounded hidden">1</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PLAYER 2 (YELLOW - Bottom Right) -->
+            <div id="playerCard-2" class="player-card flex-1 flex items-center justify-between p-2 rounded-xl bg-yellow-950/80 border-2 border-yellow-600/50 shadow-lg transition-all duration-300 opacity-45">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-white shadow flex items-center justify-center font-bold text-sm bg-yellow-500 text-white">🟡</div>
+                    <div class="leading-tight">
+                        <div class="font-bold text-xs md:text-sm text-yellow-400 flex items-center gap-1">
+                            Yellow <span id="score-2" class="text-[10px] bg-black/60 px-1 py-0.5 rounded text-yellow-300 font-normal">0/4</span>
+                        </div>
+                        <div id="pStatus-2" class="text-[10px] text-yellow-200/70 font-medium">Wait</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5">
+                    <div class="scene" onclick="handleDiceClick(2)">
+                        <div class="cube" id="diceCube-2" style="transform: translateZ(-23px) rotateX(0deg) rotateY(0deg);">
+                            <div class="cube-face face-1"><span class="dot"></span></div>
+                            <div class="cube-face face-2"><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-4"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-5"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                            <div class="cube-face face-6"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                        </div>
+                    </div>
+                    <button id="rollBtn-2" onclick="handleDiceClick(2)" class="px-2 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs rounded-lg shadow border border-yellow-200 active:scale-95 transition flex flex-col items-center">
+                        <span>🎲 ROLL</span>
+                        <span id="diceValBadge-2" class="text-[10px] bg-black text-yellow-300 px-1 rounded hidden">1</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- START / MODE SETUP MODAL -->
+    <div id="setupModal" class="fixed inset-0 modal-bg flex items-center justify-center p-4 z-50">
+        <div class="bg-gradient-to-b from-yellow-950 to-stone-900 border-4 border-yellow-500/80 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative">
+            <div class="text-5xl mb-2">👑</div>
+            <h2 class="text-3xl font-heading font-bold gold-text uppercase tracking-wider mb-1">Royal Ludo</h2>
+            <p class="text-xs text-amber-200/70 mb-5">Select game mode and player count to start the match</p>
+
+            <!-- Mode Selector -->
+            <div class="mb-4 text-left">
+                <label class="block text-xs text-amber-300 font-bold uppercase mb-1">Game Mode</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="modePassPlayBtn" onclick="selectGameMode('pass_play')" class="py-2.5 px-3 rounded-xl border-2 font-bold text-sm bg-amber-600 border-yellow-300 text-white shadow-md">
+                        👥 Pass & Play
+                    </button>
+                    <button type="button" id="modeVsAiBtn" onclick="selectGameMode('vs_ai')" class="py-2.5 px-3 rounded-xl border-2 border-amber-800 bg-amber-950/60 font-bold text-sm text-amber-300 hover:bg-amber-900">
+                        🤖 VS AI Bot
+                    </button>
+                </div>
+            </div>
+
+            <!-- Player Count Selector -->
+            <div class="mb-6 text-left">
+                <label class="block text-xs text-amber-300 font-bold uppercase mb-1">Number of Players</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="selectPlayerCount(2)" id="pCountBtn-2" class="pCountBtn py-2 rounded-xl border-2 border-amber-800 bg-amber-950/60 font-bold text-amber-200">2 Players</button>
+                    <button type="button" onclick="selectPlayerCount(3)" id="pCountBtn-3" class="pCountBtn py-2 rounded-xl border-2 border-amber-800 bg-amber-950/60 font-bold text-amber-200">3 Players</button>
+                    <button type="button" onclick="selectPlayerCount(4)" id="pCountBtn-4" class="pCountBtn py-2 rounded-xl border-2 border-yellow-300 bg-amber-600 font-bold text-white shadow-md">4 Players</button>
+                </div>
+            </div>
+
+            <!-- Player Color Selection Selector -->
+            <div class="mb-6 text-left">
+                <label id="colorSelectLabel" class="block text-xs text-amber-300 font-bold uppercase mb-1">Select Colors</label>
+                <div id="colorPickerContainer" class="grid grid-cols-4 gap-2">
+                    <!-- Dynamic Color Selection Buttons populated via JS -->
+                </div>
+            </div>
+
+            <!-- Start Game Button -->
+            <button onclick="startGame()" class="w-full py-3.5 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 text-black font-extrabold text-xl rounded-xl shadow-xl hover:brightness-110 active:scale-95 transition">
+                🚀 START MATCH
+            </button>
+        </div>
+    </div>
+
+    <!-- RESTART CONFIRMATION MODAL -->
+    <div id="restartModal" class="fixed inset-0 modal-bg flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gradient-to-b from-yellow-950 to-stone-900 border-2 border-yellow-500/80 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
+            <h3 class="text-2xl font-heading font-bold gold-text uppercase mb-2">Restart Match?</h3>
+            <p class="text-xs text-amber-200/80 mb-5">Current game progress will be lost. Return to menu?</p>
+            <div class="flex gap-3">
+                <button onclick="closeRestartModal()" class="flex-1 py-2 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-stone-300 font-bold rounded-xl text-sm">Cancel</button>
+                <button onclick="confirmRestart()" class="flex-1 py-2 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl text-sm shadow-md">Yes, Restart</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VICTORY / WINNER CELEBRATION MODAL -->
+    <div id="victoryModal" class="fixed inset-0 modal-bg flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gradient-to-b from-yellow-900 via-amber-950 to-black border-4 border-yellow-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative overflow-hidden">
+            <div class="text-6xl mb-3 animate-bounce">👑</div>
+            <h2 class="text-4xl font-heading font-bold gold-text uppercase tracking-wider mb-1">VICTORY!</h2>
+            <h3 id="winnerText" class="text-2xl font-heading text-yellow-300 mb-4">Player Wins!</h3>
+            <p class="text-xs text-amber-200/80 mb-6">Congratulations on a magnificent victory!</p>
+            
+            <button onclick="confirmRestart()" class="w-full py-3.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 text-black font-extrabold text-lg rounded-xl shadow-xl hover:brightness-110 transition active:scale-95">
+                🏆 PLAY AGAIN
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------------------
+         * AUDIO SYNTHESIZER (Web Audio API - Pure JS, zero external audio assets)
+         * ------------------------------------------------------------------------- */
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playDiceRoll() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                for (let i = 0; i < 6; i++) {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(120 + Math.random() * 200, now + i * 0.05);
+                    gain.gain.setValueAtTime(0.08, now + i * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.04);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.05);
+                    osc.stop(now + i * 0.05 + 0.04);
+                }
+            }
+
+            playTokenStep() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(540, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+
+            playSafeZone() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                [400, 520, 650].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    gain.gain.setValueAtTime(0.15, now + idx * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.12);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.06);
+                    osc.stop(now + idx * 0.06 + 0.12);
+                });
+            }
+
+            playCapture() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(450, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+
+            playChakkaSix() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.15);
+                });
+            }
+
+            playVictory() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const notes = [400, 500, 600, 800, 1000];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.12);
+                    osc.stop(now + idx * 0.12 + 0.25);
+                });
+            }
+        }
+
+        const audioEngine = new AudioEngine();
+
+        function toggleSound() {
+            audioEngine.muted = !audioEngine.muted;
+            document.getElementById('soundToggleBtn').innerText = audioEngine.muted ? '🔇' : '🔊';
+        }
+
+        function toggleSpeed() {
+            animSpeedMultiplier = (animSpeedMultiplier === 1) ? 2 : 1;
+            const btn = document.getElementById('speedToggleBtn');
+            if (btn) btn.innerText = `⚡ ${animSpeedMultiplier}x`;
+        }
+
+        /* -------------------------------------------------------------------------
+         * GAME CONSTANTS & INDIVIDUAL PLAYER PATH DATA (15x15 Matrix)
+         * ------------------------------------------------------------------------- */
+        const PLAYER_COLORS = [
+            { id: 0, name: 'Red', code: '#d32f2f', lightCode: '#ff6659', darkCode: '#9a0007', bgClass: 'bg-red-600' },
+            { id: 1, name: 'Green', code: '#388e3c', lightCode: '#6abf69', darkCode: '#00600f', bgClass: 'bg-green-600' },
+            { id: 2, name: 'Yellow', code: '#fbc02d', lightCode: '#fff263', darkCode: '#c49000', bgClass: 'bg-yellow-500' },
+            { id: 3, name: 'Blue', code: '#1976d2', lightCode: '#63a4ff', darkCode: '#004ba0', bgClass: 'bg-blue-600' }
+        ];
+
+        // Safe zone cells on the board (row/col array)
+        const SAFE_ZONES = [
+            { r: 6, c: 1 }, { r: 2, c: 6 },
+            { r: 1, c: 8 }, { r: 6, c: 12 },
+            { r: 8, c: 13 }, { r: 12, c: 8 },
+            { r: 13, c: 6 }, { r: 8, c: 2 }
+        ];
+
+        // Yard positions for 4 distinct tokens per player
+        const YARD_POSITIONS = [
+            // Red (Top Left)
+            [{ r: 2, c: 2 }, { r: 2, c: 3 }, { r: 3, c: 2 }, { r: 3, c: 3 }],
+            // Green (Top Right)
+            [{ r: 2, c: 11 }, { r: 2, c: 12 }, { r: 3, c: 11 }, { r: 3, c: 12 }],
+            // Yellow (Bottom Right)
+            [{ r: 11, c: 11 }, { r: 11, c: 12 }, { r: 12, c: 11 }, { r: 12, c: 12 }],
+            // Blue (Bottom Left)
+            [{ r: 11, c: 2 }, { r: 11, c: 3 }, { r: 12, c: 2 }, { r: 12, c: 3 }]
+        ];
+
+        // Explicit, precise 57-step path array for each color (pos 0 = Start, pos 56 = Home)
+        const PLAYER_PATHS = [
+            // 0: RED PATH (Starts at r: 6, c: 1)
+            [
+                { r: 6, c: 1 }, { r: 6, c: 2 }, { r: 6, c: 3 }, { r: 6, c: 4 }, { r: 6, c: 5 },
+                { r: 5, c: 6 }, { r: 4, c: 6 }, { r: 3, c: 6 }, { r: 2, c: 6 }, { r: 1, c: 6 }, { r: 0, c: 6 },
+                { r: 0, c: 7 },
+                { r: 0, c: 8 }, { r: 1, c: 8 }, { r: 2, c: 8 }, { r: 3, c: 8 }, { r: 4, c: 8 }, { r: 5, c: 8 },
+                { r: 6, c: 9 }, { r: 6, c: 10 }, { r: 6, c: 11 }, { r: 6, c: 12 }, { r: 6, c: 13 }, { r: 6, c: 14 },
+                { r: 7, c: 14 },
+                { r: 8, c: 14 }, { r: 8, c: 13 }, { r: 8, c: 12 }, { r: 8, c: 11 }, { r: 8, c: 10 }, { r: 8, c: 9 },
+                { r: 9, c: 8 }, { r: 10, c: 8 }, { r: 11, c: 8 }, { r: 12, c: 8 }, { r: 13, c: 8 }, { r: 14, c: 8 },
+                { r: 14, c: 7 },
+                { r: 14, c: 6 }, { r: 13, c: 6 }, { r: 12, c: 6 }, { r: 11, c: 6 }, { r: 10, c: 6 }, { r: 9, c: 6 },
+                { r: 8, c: 5 }, { r: 8, c: 4 }, { r: 8, c: 3 }, { r: 8, c: 2 }, { r: 8, c: 1 }, { r: 8, c: 0 },
+                { r: 7, c: 0 },
+                { r: 7, c: 1 }, { r: 7, c: 2 }, { r: 7, c: 3 }, { r: 7, c: 4 }, { r: 7, c: 5 }, { r: 7, c: 7 }
+            ],
+
+            // 1: GREEN PATH (Starts at r: 1, c: 8)
+            [
+                { r: 1, c: 8 }, { r: 2, c: 8 }, { r: 3, c: 8 }, { r: 4, c: 8 }, { r: 5, c: 8 },
+                { r: 6, c: 9 }, { r: 6, c: 10 }, { r: 6, c: 11 }, { r: 6, c: 12 }, { r: 6, c: 13 }, { r: 6, c: 14 },
+                { r: 7, c: 14 },
+                { r: 8, c: 14 }, { r: 8, c: 13 }, { r: 8, c: 12 }, { r: 8, c: 11 }, { r: 8, c: 10 }, { r: 8, c: 9 },
+                { r: 9, c: 8 }, { r: 10, c: 8 }, { r: 11, c: 8 }, { r: 12, c: 8 }, { r: 13, c: 8 }, { r: 14, c: 8 },
+                { r: 14, c: 7 },
+                { r: 14, c: 6 }, { r: 13, c: 6 }, { r: 12, c: 6 }, { r: 11, c: 6 }, { r: 10, c: 6 }, { r: 9, c: 6 },
+                { r: 8, c: 5 }, { r: 8, c: 4 }, { r: 8, c: 3 }, { r: 8, c: 2 }, { r: 8, c: 1 }, { r: 8, c: 0 },
+                { r: 7, c: 0 },
+                { r: 6, c: 0 }, { r: 6, c: 1 }, { r: 6, c: 2 }, { r: 6, c: 3 }, { r: 6, c: 4 }, { r: 6, c: 5 },
+                { r: 5, c: 6 }, { r: 4, c: 6 }, { r: 3, c: 6 }, { r: 2, c: 6 }, { r: 1, c: 6 }, { r: 0, c: 6 },
+                { r: 0, c: 7 },
+                { r: 1, c: 7 }, { r: 2, c: 7 }, { r: 3, c: 7 }, { r: 4, c: 7 }, { r: 5, c: 7 }, { r: 7, c: 7 }
+            ],
+
+            // 2: YELLOW PATH (Starts at r: 8, c: 13)
+            [
+                { r: 8, c: 13 }, { r: 8, c: 12 }, { r: 8, c: 11 }, { r: 8, c: 10 }, { r: 8, c: 9 },
+                { r: 9, c: 8 }, { r: 10, c: 8 }, { r: 11, c: 8 }, { r: 12, c: 8 }, { r: 13, c: 8 }, { r: 14, c: 8 },
+                { r: 14, c: 7 },
+                { r: 14, c: 6 }, { r: 13, c: 6 }, { r: 12, c: 6 }, { r: 11, c: 6 }, { r: 10, c: 6 }, { r: 9, c: 6 },
+                { r: 8, c: 5 }, { r: 8, c: 4 }, { r: 8, c: 3 }, { r: 8, c: 2 }, { r: 8, c: 1 }, { r: 8, c: 0 },
+                { r: 7, c: 0 },
+                { r: 6, c: 0 }, { r: 6, c: 1 }, { r: 6, c: 2 }, { r: 6, c: 3 }, { r: 6, c: 4 }, { r: 6, c: 5 },
+                { r: 5, c: 6 }, { r: 4, c: 6 }, { r: 3, c: 6 }, { r: 2, c: 6 }, { r: 1, c: 6 }, { r: 0, c: 6 },
+                { r: 0, c: 7 },
+                { r: 0, c: 8 }, { r: 1, c: 8 }, { r: 2, c: 8 }, { r: 3, c: 8 }, { r: 4, c: 8 }, { r: 5, c: 8 },
+                { r: 6, c: 9 }, { r: 6, c: 10 }, { r: 6, c: 11 }, { r: 6, c: 12 }, { r: 6, c: 13 }, { r: 6, c: 14 },
+                { r: 7, c: 14 },
+                { r: 7, c: 13 }, { r: 7, c: 12 }, { r: 7, c: 11 }, { r: 7, c: 10 }, { r: 7, c: 9 }, { r: 7, c: 7 }
+            ],
+
+            // 3: BLUE PATH (Starts at r: 13, c: 6)
+            [
+                { r: 13, c: 6 }, { r: 12, c: 6 }, { r: 11, c: 6 }, { r: 10, c: 6 }, { r: 9, c: 6 },
+                { r: 8, c: 5 }, { r: 8, c: 4 }, { r: 8, c: 3 }, { r: 8, c: 2 }, { r: 8, c: 1 }, { r: 8, c: 0 },
+                { r: 7, c: 0 },
+                { r: 6, c: 0 }, { r: 6, c: 1 }, { r: 6, c: 2 }, { r: 6, c: 3 }, { r: 6, c: 4 }, { r: 6, c: 5 },
+                { r: 5, c: 6 }, { r: 4, c: 6 }, { r: 3, c: 6 }, { r: 2, c: 6 }, { r: 1, c: 6 }, { r: 0, c: 6 },
+                { r: 0, c: 7 },
+                { r: 0, c: 8 }, { r: 1, c: 8 }, { r: 2, c: 8 }, { r: 3, c: 8 }, { r: 4, c: 8 }, { r: 5, c: 8 },
+                { r: 6, c: 9 }, { r: 6, c: 10 }, { r: 6, c: 11 }, { r: 6, c: 12 }, { r: 6, c: 13 }, { r: 6, c: 14 },
+                { r: 7, c: 14 },
+                { r: 8, c: 14 }, { r: 8, c: 13 }, { r: 8, c: 12 }, { r: 8, c: 11 }, { r: 8, c: 10 }, { r: 8, c: 9 },
+                { r: 9, c: 8 }, { r: 10, c: 8 }, { r: 11, c: 8 }, { r: 12, c: 8 }, { r: 13, c: 8 }, { r: 14, c: 8 },
+                { r: 14, c: 7 },
+                { r: 13, c: 7 }, { r: 12, c: 7 }, { r: 11, c: 7 }, { r: 10, c: 7 }, { r: 9, c: 7 }, { r: 7, c: 7 }
+            ]
+        ];
+
+        /* -------------------------------------------------------------------------
+         * GAME STATE MACHINE
+         * ------------------------------------------------------------------------- */
+        let gameMode = 'pass_play'; // 'pass_play' or 'vs_ai'
+        let totalPlayers = 4;
+        let humanPlayerIdx = 0; // Selected color for Human player in VS AI mode
+        let activePlayerIdx = 0;
+        let diceValue = 0;
+        let diceRolled = false;
+        let isMoving = false;
+        let consecutiveSixes = 0;
+        let animSpeedMultiplier = 1;
+        let currentRotX = [0, 0, 0, 0];
+        let currentRotY = [0, 0, 0, 0];
+
+        // Player Tokens Array
+        // State: -1 (Yard), 0..55 (Track/Home Stretch), 56 (Reached Center Home)
+        let tokens = [
+            [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }], // Red
+            [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }], // Green
+            [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }], // Yellow
+            [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }]  // Blue
+        ];
+
+        let activePlayersList = [0, 1, 2, 3];
+        let movableTokenIds = [];
+
+        // DOM & Canvas Handles
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        /* -------------------------------------------------------------------------
+         * CANVAS RENDERER - RICH DESI THEME GRAPHICS
+         * ------------------------------------------------------------------------- */
+        function drawBoard() {
+            const size = canvas.width;
+            const cellSize = size / 15;
+
+            ctx.clearRect(0, 0, size, size);
+
+            // 1. Board Wooden Base
+            ctx.fillStyle = '#1c0a02';
+            ctx.fillRect(0, 0, size, size);
+
+            // 2. Main Yards Background (4 Corners)
+            drawYardBase(0, 0, 6 * cellSize, 6 * cellSize, PLAYER_COLORS[0]);
+            drawYardBase(9 * cellSize, 0, 6 * cellSize, 6 * cellSize, PLAYER_COLORS[1]);
+            drawYardBase(9 * cellSize, 9 * cellSize, 6 * cellSize, 6 * cellSize, PLAYER_COLORS[2]);
+            drawYardBase(0, 9 * cellSize, 6 * cellSize, 6 * cellSize, PLAYER_COLORS[3]);
+
+            // 3. Grid Tracks (Cells)
+            for (let r = 0; r < 15; r++) {
+                for (let c = 0; c < 15; c++) {
+                    // Skip yards and center home for cell outline
+                    if ((r < 6 && c < 6) || (r < 6 && c > 8) || (r > 8 && c < 6) || (r > 8 && c > 8) || (r >= 6 && r <= 8 && c >= 6 && c <= 8)) {
+                        continue;
+                    }
+
+                    ctx.strokeStyle = '#b8860b';
+                    ctx.lineWidth = 1.5;
+                    ctx.fillStyle = '#fffdf0';
+                    ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                    ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                }
+            }
+
+            // 4. Color Home Paths & Colored Starting Cells
+            // Red Home Stretch
+            for (let c = 1; c <= 5; c++) drawColoredCell(7, c, PLAYER_COLORS[0].code);
+            drawColoredCell(6, 1, PLAYER_COLORS[0].code); // Start
+
+            // Green Home Stretch
+            for (let r = 1; r <= 5; r++) drawColoredCell(r, 7, PLAYER_COLORS[1].code);
+            drawColoredCell(1, 8, PLAYER_COLORS[1].code); // Start
+
+            // Yellow Home Stretch
+            for (let c = 9; c <= 13; c++) drawColoredCell(7, c, PLAYER_COLORS[2].code);
+            drawColoredCell(8, 13, PLAYER_COLORS[2].code); // Start
+
+            // Blue Home Stretch
+            for (let r = 9; r <= 13; r++) drawColoredCell(r, 7, PLAYER_COLORS[3].code);
+            drawColoredCell(13, 6, PLAYER_COLORS[3].code); // Start
+
+            // 5. Safe Zone Markers (Stars/Mandala)
+            SAFE_ZONES.forEach(sz => {
+                drawStarIcon(sz.c * cellSize + cellSize / 2, sz.r * cellSize + cellSize / 2, cellSize * 0.35, '#d4af37');
+            });
+
+            // 6. Center Home Triangle Design
+            drawCenterHome(cellSize);
+
+            // 7. Outer Metallic Border
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(0, 0, size, size);
+
+            // 8. Draw Tokens
+            drawAllTokens(cellSize);
+        }
+
+        function drawYardBase(x, y, w, h, colorObj) {
+            ctx.fillStyle = colorObj.code;
+            ctx.fillRect(x, y, w, h);
+
+            // Ornate Inner White Box
+            ctx.fillStyle = '#fffdf0';
+            ctx.fillRect(x + w * 0.15, y + h * 0.15, w * 0.7, h * 0.7);
+
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x + w * 0.15, y + h * 0.15, w * 0.7, h * 0.7);
+
+            // Inner Token Circles
+            const radius = w * 0.11;
+            const offsetL = w * 0.35;
+            const offsetR = w * 0.65;
+
+            [
+                { cx: x + offsetL, cy: y + offsetL },
+                { cx: x + offsetR, cy: y + offsetL },
+                { cx: x + offsetL, cy: y + offsetR },
+                { cx: x + offsetR, cy: y + offsetR }
+            ].forEach(pt => {
+                ctx.beginPath();
+                ctx.arc(pt.cx, pt.cy, radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                ctx.fill();
+                ctx.strokeStyle = '#b8860b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        function drawColoredCell(r, c, colorCode) {
+            const cellSize = canvas.width / 15;
+            ctx.fillStyle = colorCode;
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+            ctx.strokeStyle = '#b8860b';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+        }
+
+        function drawStarIcon(cx, cy, spikes, color) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.shadowColor = 'rgba(0,0,0,0.4)';
+            ctx.shadowBlur = 4;
+            const outerRadius = spikes;
+            const innerRadius = spikes / 2;
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            const step = Math.PI / 5;
+
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < 5; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawCenterHome(cellSize) {
+            const cx = 7.5 * cellSize;
+            const cy = 7.5 * cellSize;
+
+            // Left Triangle (Red)
+            ctx.fillStyle = PLAYER_COLORS[0].code;
+            ctx.beginPath();
+            ctx.moveTo(6 * cellSize, 6 * cellSize);
+            ctx.lineTo(cx, cy);
+            ctx.lineTo(6 * cellSize, 9 * cellSize);
+            ctx.closePath();
+            ctx.fill();
+
+            // Top Triangle (Green)
+            ctx.fillStyle = PLAYER_COLORS[1].code;
+            ctx.beginPath();
+            ctx.moveTo(6 * cellSize, 6 * cellSize);
+            ctx.lineTo(cx, cy);
+            ctx.lineTo(9 * cellSize, 6 * cellSize);
+            ctx.closePath();
+            ctx.fill();
+
+            // Right Triangle (Yellow)
+            ctx.fillStyle = PLAYER_COLORS[2].code;
+            ctx.beginPath();
+            ctx.moveTo(9 * cellSize, 6 * cellSize);
+            ctx.lineTo(cx, cy);
+            ctx.lineTo(9 * cellSize, 9 * cellSize);
+            ctx.closePath();
+            ctx.fill();
+
+            // Bottom Triangle (Blue)
+            ctx.fillStyle = PLAYER_COLORS[3].code;
+            ctx.beginPath();
+            ctx.moveTo(6 * cellSize, 9 * cellSize);
+            ctx.lineTo(cx, cy);
+            ctx.lineTo(9 * cellSize, 9 * cellSize);
+            ctx.closePath();
+            ctx.fill();
+
+            // Central Brass Ring Ornament
+            ctx.beginPath();
+            ctx.arc(cx, cy, cellSize * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = '#fffdf0';
+            ctx.fill();
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Crown Icon in Center
+            ctx.font = `${cellSize * 0.6}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('👑', cx, cy);
+        }
+
+        function drawAllTokens(cellSize) {
+            // Group tokens by row & col to render stacked tokens seamlessly
+            const map = {};
+
+            activePlayersList.forEach(pIdx => {
+                tokens[pIdx].forEach(t => {
+                    const coords = getTokenBoardCoords(pIdx, t.pos, t.id);
+                    const key = `${coords.r}_${coords.c}`;
+                    if (!map[key]) map[key] = [];
+                    map[key].push({ pIdx, tId: t.id, pos: t.pos });
+                });
+            });
+
+            // Draw tokens with offset when stacked
+            for (let key in map) {
+                const group = map[key];
+                const count = group.length;
+
+                group.forEach((item, index) => {
+                    const coords = getTokenBoardCoords(item.pIdx, item.pos, item.tId);
+                    let cx = coords.c * cellSize + cellSize / 2;
+                    let cy = coords.r * cellSize + cellSize / 2;
+
+                    // Apply offset if multiple tokens occupy the same cell
+                    if (count > 1) {
+                        const angle = (index / count) * Math.PI * 2;
+                        const offsetRadius = cellSize * 0.18;
+                        cx += Math.cos(angle) * offsetRadius;
+                        cy += Math.sin(angle) * offsetRadius;
+                    }
+
+                    const isSelectable = (item.pIdx === activePlayerIdx && diceRolled && movableTokenIds.includes(item.tId));
+                    drawSingleToken(cx, cy, cellSize * 0.38, PLAYER_COLORS[item.pIdx], isSelectable);
+                });
+            }
+        }
+
+        function drawSingleToken(cx, cy, radius, colorObj, isHighlight) {
+            ctx.save();
+
+            // Pulse highlight for clickable selectable tokens
+            if (isHighlight) {
+                const pulse = Math.sin(Date.now() / 150) * 4;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius + 6 + pulse, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 235, 59, 0.6)';
+                ctx.fill();
+            }
+
+            // Drop Shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 3;
+
+            // Outer Wooden/Brass Ring
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = colorObj.code;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Inner Dome Gradient 3D effect
+            const grad = ctx.createRadialGradient(cx - radius * 0.3, cy - radius * 0.3, radius * 0.1, cx, cy, radius);
+            grad.addColorStop(0, colorObj.lightCode);
+            grad.addColorStop(0.7, colorObj.code);
+            grad.addColorStop(1, colorObj.darkCode);
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.7, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Center Brass Knob
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.25, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff3b0';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        /* -------------------------------------------------------------------------
+         * PATH & COORDINATE CALCULATOR
+         * ------------------------------------------------------------------------- */
+        function getTokenBoardCoords(playerIdx, pos, tokenId = 0) {
+            // Pos -1: In Yard
+            if (pos === -1) {
+                return YARD_POSITIONS[playerIdx][tokenId];
+            }
+
+            // Pos 0..56: Specific Track & Home Path for this Player
+            if (pos >= 0 && pos <= 56) {
+                return PLAYER_PATHS[playerIdx][pos];
+            }
+
+            // Fallback
+            return { r: 7, c: 7 };
+        }
+
+        /* -------------------------------------------------------------------------
+         * DICE CONTROLLER & ANIMATION
+         * ------------------------------------------------------------------------- */
+        function handleDiceClick(playerIdx) {
+            if (isMoving || diceRolled) return;
+            if (playerIdx !== activePlayerIdx) return;
+
+            // Block clicks if it's AI's turn
+            if (gameMode === 'vs_ai' && activePlayerIdx !== humanPlayerIdx) return;
+
+            rollDice(playerIdx);
+        }
+
+        function rollDice(playerIdx) {
+            audioEngine.init();
+            audioEngine.playDiceRoll();
+
+            diceRolled = true;
+            document.querySelectorAll('.roll-btn, button[id^="rollBtn-"]').forEach(btn => btn.disabled = true);
+
+            const cube = document.getElementById(`diceCube-${playerIdx}`);
+            
+            // Generate Random Dice Score 1 to 6
+            diceValue = Math.floor(Math.random() * 6) + 1;
+
+            // Exact 3D rotation angle mapping for each face
+            const faceRotations = {
+                1: { x: 0, y: 0 },
+                2: { x: 0, y: -180 },
+                3: { x: 0, y: 90 },
+                4: { x: 0, y: -90 },
+                5: { x: -90, y: 0 },
+                6: { x: 90, y: 0 }
+            };
+
+            const target = faceRotations[diceValue];
+
+            // Accumulate spins per player cube
+            currentRotX[playerIdx] += 1440 + target.x - (currentRotX[playerIdx] % 360);
+            currentRotY[playerIdx] += 1440 + target.y - (currentRotY[playerIdx] % 360);
+
+            if (cube) {
+                cube.style.transition = 'transform 0.75s cubic-bezier(0.2, 0.8, 0.25, 1.15)';
+                cube.style.transform = `translateZ(-23px) rotateX(${currentRotX[playerIdx]}deg) rotateY(${currentRotY[playerIdx]}deg)`;
+            }
+
+            const badge = document.getElementById(`diceValBadge-${playerIdx}`);
+            if (badge) {
+                badge.innerText = diceValue;
+                badge.classList.remove('hidden');
+            }
+
+            setTimeout(() => {
+                processDiceRollOutcome();
+            }, 800);
+        }
+
+        function processDiceRollOutcome() {
+            if (diceValue === 6) {
+                consecutiveSixes++;
+                showToastBanner('Rolled a 6! 🎲', 'Extra Turn Awarded!');
+                audioEngine.playChakkaSix();
+
+                // Three Consecutive 6s Rule -> Pass Turn
+                if (consecutiveSixes === 3) {
+                    showToastBanner('Three 6s Rolled! 🚫', 'Turn Forfeited');
+                    setTimeout(() => {
+                        resetDiceStreak();
+                        nextTurn();
+                    }, 1200);
+                    return;
+                }
+            } else {
+                resetDiceStreak();
+            }
+
+            // Find valid movable tokens for active player
+            movableTokenIds = getMovableTokens(activePlayerIdx, diceValue);
+
+            drawBoard();
+
+            // Auto Pass Turn if no moves are valid
+            if (movableTokenIds.length === 0) {
+                showToastBanner('No Valid Moves ❌', 'Passing Turn');
+                setTimeout(() => {
+                    nextTurn();
+                }, 1000);
+            } else if (movableTokenIds.length === 1 && (gameMode === 'pass_play' || activePlayerIdx === humanPlayerIdx)) {
+                // Auto Move if only 1 single valid token exists
+                setTimeout(() => {
+                    moveToken(activePlayerIdx, movableTokenIds[0]);
+                }, 350);
+            } else if (gameMode === 'vs_ai' && activePlayerIdx !== humanPlayerIdx) {
+                // AI Decision Logic
+                setTimeout(() => {
+                    aiSelectAndMoveToken();
+                }, 600);
+            }
+        }
+
+        function resetDiceStreak() {
+            consecutiveSixes = 0;
+        }
+
+        /* -------------------------------------------------------------------------
+         * TOKEN MOVEMENT LOGIC & ANIMATION ENGINE
+         * ------------------------------------------------------------------------- */
+        function getMovableTokens(playerIdx, rollVal) {
+            const list = [];
+            tokens[playerIdx].forEach(t => {
+                if (t.pos === -1) {
+                    // Requires 6 to move out of Yard
+                    if (rollVal === 6) list.push(t.id);
+                } else if (t.pos + rollVal <= 56) {
+                    // Cannot overshoot home square (pos 56)
+                    list.push(t.id);
+                }
+            });
+            return list;
+        }
+
+        // Canvas Click Listener for selecting tokens
+        canvas.addEventListener('click', (e) => {
+            if (!diceRolled || isMoving) return;
+            if (gameMode === 'vs_ai' && activePlayerIdx !== humanPlayerIdx) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const cellSize = canvas.width / 15;
+
+            // Check if click hits a valid token
+            movableTokenIds.forEach(tId => {
+                const token = tokens[activePlayerIdx][tId];
+                const coords = getTokenBoardCoords(activePlayerIdx, token.pos, token.id);
+                const tokenCx = coords.c * cellSize + cellSize / 2;
+                const tokenCy = coords.r * cellSize + cellSize / 2;
+
+                const dist = Math.hypot(clickX - tokenCx, clickY - tokenCy);
+                if (dist < cellSize * 0.6) {
+                    moveToken(activePlayerIdx, tId);
+                }
+            });
+        });
+
+        function moveToken(playerIdx, tokenId) {
+            if (isMoving) return;
+            isMoving = true;
+            movableTokenIds = [];
+
+            const token = tokens[playerIdx][tokenId];
+            const stepsToMove = (token.pos === -1 && diceValue === 6) ? 1 : diceValue;
+            let currentStep = 0;
+
+            const moveInterval = setInterval(() => {
+                if (token.pos === -1 && diceValue === 6) {
+                    token.pos = 0; // Move out to starting cell
+                } else {
+                    token.pos += 1;
+                }
+
+                currentStep++;
+                audioEngine.playTokenStep();
+                drawBoard();
+
+                if (currentStep >= stepsToMove) {
+                    clearInterval(moveInterval);
+                    setTimeout(() => {
+                        handlePostMoveRules(playerIdx, token);
+                    }, 150);
+                }
+            }, 180 / animSpeedMultiplier);
+        }
+
+        function handlePostMoveRules(playerIdx, movedToken) {
+            let extraTurn = (diceValue === 6);
+
+            // Check if landed on home center (pos 56)
+            if (movedToken.pos === 56) {
+                audioEngine.playVictory();
+                showToastBanner('Token Home! 🏆', 'Extra Turn Awarded!');
+                extraTurn = true; // Bonus turn for getting token home
+                updateScoreboard();
+
+                // Check Win Condition (All 4 tokens home)
+                if (tokens[playerIdx].every(t => t.pos === 56)) {
+                    triggerVictory(playerIdx);
+                    return;
+                }
+            } else if (movedToken.pos >= 0 && movedToken.pos <= 50) {
+                // Check Capture on Common Outer Path (pos 0 to 50)
+                const landedCoords = getTokenBoardCoords(playerIdx, movedToken.pos, movedToken.id);
+
+                // Is landed cell a safe zone?
+                const isSafeCell = SAFE_ZONES.some(sz => sz.r === landedCoords.r && sz.c === landedCoords.c);
+
+                if (!isSafeCell) {
+                    // Check opponent tokens on same cell
+                    activePlayersList.forEach(otherPIdx => {
+                        if (otherPIdx !== playerIdx) {
+                            tokens[otherPIdx].forEach(oppToken => {
+                                if (oppToken.pos >= 0 && oppToken.pos <= 50) {
+                                    const oppCoords = getTokenBoardCoords(otherPIdx, oppToken.pos, oppToken.id);
+                                    if (oppCoords.r === landedCoords.r && oppCoords.c === landedCoords.c) {
+                                        // CAPTURE OPPONENT TOKEN!
+                                        oppToken.pos = -1; // Send back to yard
+                                        extraTurn = true; // Bonus turn for capture
+                                        audioEngine.playCapture();
+                                        showToastBanner('Token Captured! ⚔️', `${PLAYER_COLORS[otherPIdx].name}'s token captured!`);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    audioEngine.playSafeZone();
+                }
+            }
+
+            isMoving = false;
+            drawBoard();
+
+            if (extraTurn) {
+                diceRolled = false;
+                updateTurnUI();
+
+                if (gameMode === 'vs_ai' && activePlayerIdx !== humanPlayerIdx) {
+                    setTimeout(() => { rollDice(activePlayerIdx); }, 800);
+                }
+            } else {
+                nextTurn();
+            }
+        }
+
+        /* -------------------------------------------------------------------------
+         * TURN MANAGEMENT & SMART AI ENGINE
+         * ------------------------------------------------------------------------- */
+        function nextTurn() {
+            diceRolled = false;
+            isMoving = false;
+            resetDiceStreak();
+
+            // Advance to next active player index
+            const currentListIdx = activePlayersList.indexOf(activePlayerIdx);
+            const nextListIdx = (currentListIdx + 1) % activePlayersList.length;
+            activePlayerIdx = activePlayersList[nextListIdx];
+
+            updateTurnUI();
+            drawBoard();
+
+            // Trigger AI Turn if applicable
+            if (gameMode === 'vs_ai' && activePlayerIdx !== humanPlayerIdx) {
+                setTimeout(() => {
+                    rollDice(activePlayerIdx);
+                }, 700);
+            }
+        }
+
+        function aiSelectAndMoveToken() {
+            if (movableTokenIds.length === 0) return;
+
+            let chosenTokenId = movableTokenIds[0];
+            let bestScore = -999;
+
+            // Strategic AI evaluation heuristic:
+            // 1. Priority to capture an opponent token (+100)
+            // 2. Priority to get token into Home center (+80)
+            // 3. Priority to unlock token from Yard (+50)
+            // 4. Priority to reach Safe Zone (+30)
+            // 5. Prefer moving tokens closest to home
+            movableTokenIds.forEach(tId => {
+                const t = tokens[activePlayerIdx][tId];
+                let score = 0;
+
+                if (t.pos === -1) {
+                    score += 50; // Opening token from yard is strong
+                } else {
+                    const futurePos = t.pos + diceValue;
+                    if (futurePos === 56) {
+                        score += 80;
+                    } else if (futurePos <= 50) {
+                        const targetCoords = getTokenBoardCoords(activePlayerIdx, futurePos, tId);
+
+                        // Check capture possibility
+                        activePlayersList.forEach(oppIdx => {
+                            if (oppIdx !== activePlayerIdx) {
+                                tokens[oppIdx].forEach(oppT => {
+                                    if (oppT.pos >= 0 && oppT.pos <= 50) {
+                                        const oppCoords = getTokenBoardCoords(oppIdx, oppT.pos, oppT.id);
+                                        if (oppCoords.r === targetCoords.r && oppCoords.c === targetCoords.c) {
+                                            score += 100;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        // Safe zone bonus
+                        if (SAFE_ZONES.some(sz => sz.r === targetCoords.r && sz.c === targetCoords.c)) {
+                            score += 30;
+                        }
+                    }
+
+                    // Progress weight
+                    score += t.pos;
+                }
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    chosenTokenId = tId;
+                }
+            });
+
+            moveToken(activePlayerIdx, chosenTokenId);
+        }
+
+        /* -------------------------------------------------------------------------
+         * UI CONTROLLERS & ANNOUNCEMENTS
+         * ------------------------------------------------------------------------- */
+        function updateTurnUI() {
+            [0, 1, 2, 3].forEach(pIdx => {
+                const card = document.getElementById(`playerCard-${pIdx}`);
+                const status = document.getElementById(`pStatus-${pIdx}`);
+                const rollBtn = document.getElementById(`rollBtn-${pIdx}`);
+                const isCurrent = (pIdx === activePlayerIdx);
+                const isActiveInGame = activePlayersList.includes(pIdx);
+
+                if (!card) return;
+
+                if (!isActiveInGame) {
+                    card.style.display = 'none';
+                    return;
+                }
+                card.style.display = 'flex';
+
+                if (isCurrent) {
+                    card.className = `player-card flex-1 flex items-center justify-between p-2 rounded-xl bg-yellow-950/95 border-2 border-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-all duration-300 opacity-100 scale-102`;
+                    if (status) {
+                        if (gameMode === 'vs_ai' && pIdx !== humanPlayerIdx) {
+                            status.innerText = 'Bot Thinking...';
+                            status.className = 'text-[10px] text-yellow-300 font-bold animate-pulse';
+                        } else {
+                            status.innerText = diceRolled ? 'Select Token' : 'Your Turn (Roll)';
+                            status.className = 'text-[10px] text-yellow-300 font-bold animate-pulse';
+                        }
+                    }
+                    if (rollBtn) rollBtn.disabled = diceRolled;
+                } else {
+                    card.className = `player-card flex-1 flex items-center justify-between p-2 rounded-xl bg-yellow-950/80 border-2 border-yellow-900/50 shadow-lg transition-all duration-300 opacity-45`;
+                    if (status) {
+                        status.innerText = 'Wait';
+                        status.className = 'text-[10px] text-yellow-200/70 font-medium';
+                    }
+                    if (rollBtn) rollBtn.disabled = true;
+                }
+            });
+        }
+
+        function showToastBanner(title, subtitle) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast-banner flex flex-col items-center justify-center bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-black px-6 py-2.5 rounded-2xl shadow-2xl border-2 border-white text-center z-30';
+            toast.innerHTML = `
+                <span class="font-extrabold text-base md:text-lg tracking-wide uppercase leading-tight">${title}</span>
+                ${subtitle ? `<span class="text-xs font-bold text-amber-950">${subtitle}</span>` : ''}
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 2200);
+        }
+
+        function updateScoreboard() {
+            [0, 1, 2, 3].forEach(pIdx => {
+                const scoreElem = document.getElementById(`score-${pIdx}`);
+                if (scoreElem) {
+                    const homeCount = tokens[pIdx].filter(t => t.pos === 56).length;
+                    scoreElem.innerText = `${homeCount}/4`;
+                }
+            });
+        }
+
+        function updateColorPickerUI() {
+            const container = document.getElementById('colorPickerContainer');
+            const label = document.getElementById('colorSelectLabel');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (gameMode === 'vs_ai') {
+                if (label) label.innerText = "Choose Your Color (Vs AI Bot)";
+                PLAYER_COLORS.forEach(col => {
+                    const isSelected = (humanPlayerIdx === col.id);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.onclick = () => selectHumanColor(col.id);
+                    btn.className = `py-2 rounded-xl border-2 font-bold text-xs flex flex-col items-center justify-center transition ${
+                        isSelected 
+                        ? 'border-yellow-300 bg-amber-600 text-white shadow-md scale-105' 
+                        : 'border-amber-900 bg-amber-950/60 text-amber-300 hover:bg-amber-900'
+                    }`;
+                    btn.innerHTML = `<span class="text-base">${['🔴','🟢','🟡','🔵'][col.id]}</span><span>${col.name}</span>`;
+                    container.appendChild(btn);
+                });
+            } else {
+                if (label) label.innerText = `Select Board Colors (${activePlayersList.length}/${totalPlayers})`;
+                PLAYER_COLORS.forEach(col => {
+                    const isSelected = activePlayersList.includes(col.id);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.onclick = () => togglePlayerColor(col.id);
+                    btn.className = `py-2 rounded-xl border-2 font-bold text-xs flex flex-col items-center justify-center transition ${
+                        isSelected 
+                        ? 'border-yellow-300 bg-amber-600 text-white shadow-md scale-105' 
+                        : 'border-amber-900 bg-amber-950/40 text-stone-400 opacity-60'
+                    }`;
+                    btn.innerHTML = `<span class="text-base">${['🔴','🟢','🟡','🔵'][col.id]}</span><span>${col.name}</span>`;
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        function selectHumanColor(colorId) {
+            humanPlayerIdx = colorId;
+            updateColorPickerUI();
+        }
+
+        function togglePlayerColor(colorId) {
+            if (activePlayersList.includes(colorId)) {
+                if (activePlayersList.length > 2) {
+                    activePlayersList = activePlayersList.filter(id => id !== colorId);
+                    totalPlayers = activePlayersList.length;
+                    updatePlayerCountUI();
+                }
+            } else {
+                if (activePlayersList.length < 4) {
+                    activePlayersList.push(colorId);
+                    activePlayersList.sort((a, b) => a - b);
+                    totalPlayers = activePlayersList.length;
+                    updatePlayerCountUI();
+                }
+            }
+            updateColorPickerUI();
+        }
+
+        function updatePlayerCountUI() {
+            document.querySelectorAll('.pCountBtn').forEach(btn => {
+                btn.className = 'pCountBtn py-2 rounded-xl border-2 border-amber-800 bg-amber-950/60 font-bold text-amber-200';
+            });
+            const activeBtn = document.getElementById(`pCountBtn-${totalPlayers}`);
+            if (activeBtn) {
+                activeBtn.className = 'pCountBtn py-2 rounded-xl border-2 border-yellow-300 bg-amber-600 font-bold text-white shadow-md';
+            }
+        }
+
+        /* -------------------------------------------------------------------------
+         * MODALS & SETUP CONTROLLERS
+         * ------------------------------------------------------------------------- */
+        function selectGameMode(mode) {
+            gameMode = mode;
+            document.getElementById('modePassPlayBtn').className = mode === 'pass_play' 
+                ? 'py-2.5 px-3 rounded-xl border-2 font-bold text-sm bg-amber-600 border-yellow-300 text-white shadow-md'
+                : 'py-2.5 px-3 rounded-xl border-2 border-amber-800 bg-amber-950/60 font-bold text-sm text-amber-300 hover:bg-amber-900';
+
+            document.getElementById('modeVsAiBtn').className = mode === 'vs_ai' 
+                ? 'py-2.5 px-3 rounded-xl border-2 font-bold text-sm bg-amber-600 border-yellow-300 text-white shadow-md'
+                : 'py-2.5 px-3 rounded-xl border-2 border-amber-800 bg-amber-950/60 font-bold text-sm text-amber-300 hover:bg-amber-900';
+
+            updateColorPickerUI();
+        }
+
+        function selectPlayerCount(count) {
+            totalPlayers = count;
+            updatePlayerCountUI();
+
+            if (totalPlayers === 2) activePlayersList = [0, 2];
+            else if (totalPlayers === 3) activePlayersList = [0, 1, 2];
+            else activePlayersList = [0, 1, 2, 3];
+
+            updateColorPickerUI();
+        }
+
+        function startGame() {
+            audioEngine.init();
+            document.getElementById('setupModal').classList.add('hidden');
+
+            if (gameMode === 'vs_ai') {
+                if (!activePlayersList.includes(humanPlayerIdx)) {
+                    activePlayersList[0] = humanPlayerIdx;
+                    activePlayersList.sort((a, b) => a - b);
+                }
+            }
+
+            resetGameState();
+        }
+
+        function resetGameState() {
+            activePlayerIdx = activePlayersList[0];
+            diceValue = 1;
+            diceRolled = false;
+            isMoving = false;
+            movableTokenIds = [];
+            
+            tokens = [
+                [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }],
+                [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }],
+                [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }],
+                [{ id: 0, pos: -1 }, { id: 1, pos: -1 }, { id: 2, pos: -1 }, { id: 3, pos: -1 }]
+            ];
+
+            updateTurnUI();
+            updateScoreboard();
+            drawBoard();
+        }
+
+        function openRestartModal() {
+            document.getElementById('restartModal').classList.remove('hidden');
+        }
+
+        function closeRestartModal() {
+            document.getElementById('restartModal').classList.add('hidden');
+        }
+
+        function confirmRestart() {
+            closeRestartModal();
+            document.getElementById('victoryModal').classList.add('hidden');
+            document.getElementById('setupModal').classList.remove('hidden');
+        }
+
+        function triggerVictory(pIdx) {
+            document.getElementById('winnerText').innerText = `${PLAYER_COLORS[pIdx].name} Wins the Game!`;
+            document.getElementById('victoryModal').classList.remove('hidden');
+        }
+
+        /* -------------------------------------------------------------------------
+         * WINDOW LOAD INITIALIZATION
+         * ------------------------------------------------------------------------- */
+        window.onload = function() {
+            updateColorPickerUI();
+            drawBoard();
+            
+            // Handle window resizing gracefully
+            window.addEventListener('resize', () => {
+                drawBoard();
+            });
+        };
+    </script>
+</body>
+</html>
